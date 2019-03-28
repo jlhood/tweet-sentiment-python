@@ -11,8 +11,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 0.0.2
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.2
+    SemanticVersion: 0.0.3
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.3
 
 Parameters:
   SearchText:
@@ -21,6 +21,11 @@ Parameters:
     # Search text is used as a CW Logs dimension so have to keep it within the constraints of a dimension value.
     MinLength: 1
     MaxLength: 255
+  PollingFrequencyInMinutes:
+    Type: Number
+    Description: Frequency (in minutes) to poll for new tweets.
+    MinValue: 1
+    Default: 1
   LogLevel:
     Type: String
     Description: Log level for Lambda function logging, e.g., ERROR, INFO, DEBUG, etc
@@ -56,5 +61,6 @@ Resources:
         SearchText: !Sub '${SearchText} -filter:nativeretweets'
         # If true, the app will remember the last tweet found and only invoke the tweet processor function for newer tweets. If false, the app will be stateless and invoke the tweet processor function with all tweets found in each polling cycle.
         StreamModeEnabled: 'true'
+        PollingFrequencyInMinutes: !Ref PollingFrequencyInMinutes
         # Name of lambda function that should be invoked to process tweets. Note, this must be a function name and not a function ARN.
         TweetProcessorFunctionName: !Ref TweetSentiment
