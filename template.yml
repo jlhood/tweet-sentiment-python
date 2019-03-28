@@ -15,9 +15,12 @@ Metadata:
     SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.1
 
 Parameters:
-  TwitterSearchText:
+  SearchText:
     Type: String
     Description: Search text to pass to Twitter. You can experiment with the Twitter search API at https://twitter.com/search-home
+    # Search text is used as a CW Logs dimension so have to keep it within the constraints of a dimension value.
+    MinLength: 1
+    MaxLength: 255
   LogLevel:
     Type: String
     Description: Log level for Lambda function logging, e.g., ERROR, INFO, DEBUG, etc
@@ -35,6 +38,7 @@ Resources:
       Environment:
         Variables:
           LOG_LEVEL: !Ref LogLevel
+          SEARCH_TEXT: !Ref SearchText
 
   Tweets:
     Type: AWS::Serverless::Application
@@ -44,9 +48,9 @@ Resources:
         SemanticVersion: 2.0.0
       Parameters: 
         # Max number of tweets to send to the TweetProcessor lambda function on each invocation.
-        BatchSize: '20' # max allowed by BatchDetectSentiment API
+        BatchSize: '20' # max allowed by PutMetricData API
         # Non-URL-encoded search text poller should use when querying Twitter Search API.
-        SearchText: !Sub '${TwitterSearchText} -filter:nativeretweets'
+        SearchText: !Sub '${SearchText} -filter:nativeretweets'
         # If true, the app will remember the last tweet found and only invoke the tweet processor function for newer tweets. If false, the app will be stateless and invoke the tweet processor function with all tweets found in each polling cycle.
         StreamModeEnabled: 'true'
         # Name of lambda function that should be invoked to process tweets. Note, this must be a function name and not a function ARN.
