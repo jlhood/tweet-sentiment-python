@@ -11,8 +11,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 0.0.3
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.3
+    SemanticVersion: 0.0.4
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.4
 
 Parameters:
   SearchText:
@@ -64,3 +64,124 @@ Resources:
         PollingFrequencyInMinutes: !Ref PollingFrequencyInMinutes
         # Name of lambda function that should be invoked to process tweets. Note, this must be a function name and not a function ARN.
         TweetProcessorFunctionName: !Ref TweetSentiment
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardBody: !Sub |
+        {
+            "widgets": [
+                {
+                    "type": "metric",
+                    "x": 12,
+                    "y": 6,
+                    "width": 12,
+                    "height": 6,
+                    "properties": {
+                        "metrics": [
+                            [ "TweetSentiment", "SentimentScore", "SearchText", "${SearchText}", "SentimentType", "Mixed" ],
+                            [ "...", { "stat": "Maximum" } ],
+                            [ "...", { "stat": "Minimum" } ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "${AWS::Region}",
+                        "stat": "Average",
+                        "period": 300,
+                        "title": "Mixed - ${SearchText}",
+                        "yAxis": {
+                            "left": {
+                                "label": "%",
+                                "showUnits": false,
+                                "min": 0,
+                                "max": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "metric",
+                    "x": 0,
+                    "y": 0,
+                    "width": 12,
+                    "height": 6,
+                    "properties": {
+                        "metrics": [
+                            [ "TweetSentiment", "SentimentScore", "SearchText", "${SearchText}", "SentimentType", "Positive" ],
+                            [ "...", { "stat": "Maximum" } ],
+                            [ "...", { "stat": "Minimum" } ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "${AWS::Region}",
+                        "stat": "Average",
+                        "period": 300,
+                        "title": "Positive - ${SearchText}",
+                        "yAxis": {
+                            "left": {
+                                "label": "%",
+                                "showUnits": false,
+                                "min": 0,
+                                "max": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "metric",
+                    "x": 12,
+                    "y": 0,
+                    "width": 12,
+                    "height": 6,
+                    "properties": {
+                        "metrics": [
+                            [ "TweetSentiment", "SentimentScore", "SearchText", "${SearchText}", "SentimentType", "Negative" ],
+                            [ "...", { "stat": "Maximum" } ],
+                            [ "...", { "stat": "Minimum" } ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "${AWS::Region}",
+                        "stat": "Average",
+                        "period": 300,
+                        "title": "Negative - ${SearchText}",
+                        "yAxis": {
+                            "left": {
+                                "label": "%",
+                                "showUnits": false,
+                                "min": 0,
+                                "max": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "metric",
+                    "x": 0,
+                    "y": 6,
+                    "width": 12,
+                    "height": 6,
+                    "properties": {
+                        "metrics": [
+                            [ "TweetSentiment", "SentimentScore", "SearchText", "${SearchText}", "SentimentType", "Neutral" ],
+                            [ "...", { "stat": "Maximum" } ],
+                            [ "...", { "stat": "Minimum" } ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "${AWS::Region}",
+                        "stat": "Average",
+                        "period": 300,
+                        "title": "Neutral - ${SearchText}",
+                        "yAxis": {
+                            "left": {
+                                "label": "%",
+                                "showUnits": false,
+                                "min": 0,
+                                "max": 1
+                            }
+                        }
+                    }
+                }
+            ]
+        }
