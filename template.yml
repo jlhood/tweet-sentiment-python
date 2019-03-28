@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Description: Publishes tweet sentiment analysis metrics for the given Twitter search.
 
 Metadata:
   AWS::ServerlessRepo::Application:
@@ -11,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 0.0.4
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.4
+    SemanticVersion: 0.0.5
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.5
 
 Parameters:
   SearchText:
