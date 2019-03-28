@@ -11,8 +11,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 0.0.1
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.1
+    SemanticVersion: 0.0.2
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.2
 
 Parameters:
   SearchText:
@@ -35,6 +35,9 @@ Resources:
       Runtime: python3.7
       Tracing: Active
       Timeout: 60
+      Policies:
+        - ComprehendBasicAccessPolicy: {}
+        - CloudWatchPutMetricPolicy: {}
       Environment:
         Variables:
           LOG_LEVEL: !Ref LogLevel
