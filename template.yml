@@ -4,52 +4,50 @@ Transform: AWS::Serverless-2016-10-31
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: tweet-sentiment-python
-    Description: This serverless application... TODO
+    Description: Python implementation of serverless app that publishes sentiment score metrics of tweets to CloudWatch Metrics.
     Author: James Hood
-    # SPDX License Id, e.g., MIT, MIT-0, Apache-2.0. See https://spdx.org/licenses for more details
-    SpdxLicenseId: TODO
+    SpdxLicenseId: MIT
     LicenseUrl: LICENSE
     ReadmeUrl: README.md
-    Labels: [serverless]
+    Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    # Update the semantic version and run sam publish to publish a new version of your app
     SemanticVersion: 0.0.1
-    # best practice is to use git tags for each release and link to the version tag as your source code URL
     SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.1
 
 Parameters:
+  TwitterSearchText:
+    Type: String
+    Description: Search text to pass to Twitter. You can experiment with the Twitter search API at https://twitter.com/search-home
   LogLevel:
     Type: String
     Description: Log level for Lambda function logging, e.g., ERROR, INFO, DEBUG, etc
     Default: INFO
 
 Resources:
-  MyFunction:
+  TweetSentiment:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
-      Handler: myfunction.handler
+      Handler: tweetsentiment.handler
       Runtime: python3.7
       Tracing: Active
       Timeout: 60
       Environment:
         Variables:
           LOG_LEVEL: !Ref LogLevel
-          TABLE_NAME: !Ref MyTable
 
-  MyTable:
-    Type: AWS::Serverless::SimpleTable
-
-Outputs:
-  MyFunctionName:
-    Description: "Lambda Function Name"
-    Value: !Ref MyFunction
-  MyFunctionArn:
-    Description: "Lambda Function ARN"
-    Value: !GetAtt MyFunction.Arn
-  MyTableName:
-    Description: "Table Name"
-    Value: !Ref MyTable
-  MyTableArn:
-    Description: "Table ARN"
-    Value: !GetAtt MyTable.Arn
+  Tweets:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location:
+        ApplicationId: arn:aws:serverlessrepo:us-east-1:077246666028:applications/aws-serverless-twitter-event-source
+        SemanticVersion: 2.0.0
+      Parameters: 
+        # Max number of tweets to send to the TweetProcessor lambda function on each invocation.
+        BatchSize: '20' # max allowed by BatchDetectSentiment API
+        # Non-URL-encoded search text poller should use when querying Twitter Search API.
+        SearchText: !Sub '${TwitterSearchText} -filter:nativeretweets'
+        # If true, the app will remember the last tweet found and only invoke the tweet processor function for newer tweets. If false, the app will be stateless and invoke the tweet processor function with all tweets found in each polling cycle.
+        StreamModeEnabled: 'true'
+        # Name of lambda function that should be invoked to process tweets. Note, this must be a function name and not a function ARN.
+        TweetProcessorFunctionName: !Ref TweetSentiment
