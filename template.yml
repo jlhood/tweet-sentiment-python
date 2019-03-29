@@ -12,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 0.0.5
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.5
+    SemanticVersion: 0.0.6
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.6
 
 Parameters:
   SearchText:
@@ -26,11 +26,29 @@ Parameters:
     Type: Number
     Description: Frequency (in minutes) to poll for new tweets.
     MinValue: 1
-    Default: 1
+    Default: 5
+  DashboardName:
+    Type: String
+    Description: CloudWatch dashboard name. If not specified, defaults to let CloudFormation name the Dashboard.
+    MaxLength: 255
+    AllowedPattern: "^[a-zA-Z0-9\\-_]*$"
+    Default: ''
+  DashboardPeriodInSeconds:
+    Type: Number
+    Description: Period (in seconds) for graphs on CloudWatch dashboard. Valid values are 60 (1 minute), 300 (5 minute), or 3600 (1 hour).
+    AllowedValues:
+      - 60
+      - 300
+      - 3600
+    Default: 300
   LogLevel:
     Type: String
     Description: Log level for Lambda function logging, e.g., ERROR, INFO, DEBUG, etc
     Default: INFO
+
+Conditions:
+  DashboardNameProvided:
+    !Not [!Equals [!Ref DashboardName, '']]
 
 Resources:
   TweetSentiment:
@@ -69,6 +87,10 @@ Resources:
   Dashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
+      DashboardName: !If
+        - DashboardNameProvided
+        - !Ref DashboardName
+        - !Ref AWS::NoValue
       DashboardBody: !Sub |
         {
             "widgets": [
@@ -88,7 +110,7 @@ Resources:
                         "stacked": false,
                         "region": "${AWS::Region}",
                         "stat": "Average",
-                        "period": 300,
+                        "period": ${DashboardPeriodInSeconds},
                         "title": "Mixed - ${SearchText}",
                         "yAxis": {
                             "left": {
@@ -116,7 +138,7 @@ Resources:
                         "stacked": false,
                         "region": "${AWS::Region}",
                         "stat": "Average",
-                        "period": 300,
+                        "period": ${DashboardPeriodInSeconds},
                         "title": "Positive - ${SearchText}",
                         "yAxis": {
                             "left": {
@@ -144,7 +166,7 @@ Resources:
                         "stacked": false,
                         "region": "${AWS::Region}",
                         "stat": "Average",
-                        "period": 300,
+                        "period": ${DashboardPeriodInSeconds},
                         "title": "Negative - ${SearchText}",
                         "yAxis": {
                             "left": {
@@ -172,7 +194,7 @@ Resources:
                         "stacked": false,
                         "region": "${AWS::Region}",
                         "stat": "Average",
-                        "period": 300,
+                        "period": ${DashboardPeriodInSeconds},
                         "title": "Neutral - ${SearchText}",
                         "yAxis": {
                             "left": {
