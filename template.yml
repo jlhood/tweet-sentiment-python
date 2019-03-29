@@ -12,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 0.0.7
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.7
+    SemanticVersion: 0.0.8
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.8
 
 Parameters:
   SearchText:
@@ -226,30 +226,30 @@ Resources:
                                 "max": 1
                             }
                         }
-                    },
-                    {
-                        "type": "log",
-                        "x": 0,
-                        "y": 12,
-                        "width": 24,
-                        "height": 6,
-                        "properties": {
-                            "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[*]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Positive:* Negative:* Neutral:* Mixed:*' as logLevel, datetime, requestId, tweetUrl, positive, negative, neutral, mixed\n| filter positive >= ${DashboardMinConfidenceThreshold}\n| sort positive desc\n| limit 10",
-                            "region": "${AWS::Region}",
-                            "title": "Top Positive Tweets - ${SearchText}"
-                        }
-                    },
-                    {
-                        "type": "log",
-                        "x": 0,
-                        "y": 18,
-                        "width": 24,
-                        "height": 6,
-                        "properties": {
-                            "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[*]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Positive:* Negative:* Neutral:* Mixed:*' as logLevel, datetime, requestId, tweetUrl, positive, negative, neutral, mixed\n| filter negative >= ${DashboardMinConfidenceThreshold}\n| sort negative desc\n| limit 10",
-                            "region": "${AWS::Region}",
-                            "title": "Top Negative Tweets - ${SearchText}"
-                        }
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 12,
+                    "width": 24,
+                    "height": 6,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[*]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Positive:* Negative:* Neutral:* Mixed:*' as logLevel, datetime, requestId, tweetUrl, positive, negative, neutral, mixed\n| filter positive >= ${DashboardMinConfidenceThreshold}\n| sort positive desc\n| limit 10",
+                        "region": "${AWS::Region}",
+                        "title": "Top Positive Tweets - ${SearchText}"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 18,
+                    "width": 24,
+                    "height": 6,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[*]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Positive:* Negative:* Neutral:* Mixed:*' as logLevel, datetime, requestId, tweetUrl, positive, negative, neutral, mixed\n| filter negative >= ${DashboardMinConfidenceThreshold}\n| sort negative desc\n| limit 10",
+                        "region": "${AWS::Region}",
+                        "title": "Top Negative Tweets - ${SearchText}"
                     }
                 }
             ]
