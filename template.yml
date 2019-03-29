@@ -4,7 +4,7 @@ Description: Publishes tweet sentiment analysis metrics for the given Twitter se
 
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: tweet-sentiment-python
+    Name: tweet-sentiment
     Description: Python implementation of serverless app that publishes sentiment score metrics of tweets to CloudWatch Metrics.
     Author: James Hood
     SpdxLicenseId: MIT
@@ -12,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 0.0.8
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.8
+    SemanticVersion: 2.0.0
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.0.0
 
 Parameters:
   SearchText:
