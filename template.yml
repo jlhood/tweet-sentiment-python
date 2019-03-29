@@ -12,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 0.0.6
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.6
+    SemanticVersion: 0.0.7
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/0.0.7
 
 Parameters:
   SearchText:
@@ -41,6 +41,12 @@ Parameters:
       - 300
       - 3600
     Default: 300
+  DashboardMinConfidenceThreshold:
+    Type: Number
+    Description: Minimum confidence threshold used to determine positive/negative tweets in the CloudWatch Dashboard.
+    MinValue: 0
+    MaxValue: 1
+    Default: 0.75
   LogLevel:
     Type: String
     Description: Log level for Lambda function logging, e.g., ERROR, INFO, DEBUG, etc
@@ -147,6 +153,14 @@ Resources:
                                 "min": 0,
                                 "max": 1
                             }
+                        },
+                        "annotations": {
+                            "horizontal": [
+                                {
+                                    "label": "Confidence",
+                                    "value": ${DashboardMinConfidenceThreshold}
+                                }
+                            ]
                         }
                     }
                 },
@@ -175,6 +189,14 @@ Resources:
                                 "min": 0,
                                 "max": 1
                             }
+                        },
+                        "annotations": {
+                            "horizontal": [
+                                {
+                                    "label": "Confidence",
+                                    "value": ${DashboardMinConfidenceThreshold}
+                                }
+                            ]
                         }
                     }
                 },
@@ -204,7 +226,42 @@ Resources:
                                 "max": 1
                             }
                         }
+                    },
+                    {
+                        "type": "log",
+                        "x": 0,
+                        "y": 12,
+                        "width": 24,
+                        "height": 6,
+                        "properties": {
+                            "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[*]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Positive:* Negative:* Neutral:* Mixed:*' as logLevel, datetime, requestId, tweetUrl, positive, negative, neutral, mixed\n| filter positive >= ${DashboardMinConfidenceThreshold}\n| sort positive desc\n| limit 10",
+                            "region": "${AWS::Region}",
+                            "title": "Top Positive Tweets - ${SearchText}"
+                        }
+                    },
+                    {
+                        "type": "log",
+                        "x": 0,
+                        "y": 18,
+                        "width": 24,
+                        "height": 6,
+                        "properties": {
+                            "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[*]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Positive:* Negative:* Neutral:* Mixed:*' as logLevel, datetime, requestId, tweetUrl, positive, negative, neutral, mixed\n| filter negative >= ${DashboardMinConfidenceThreshold}\n| sort negative desc\n| limit 10",
+                            "region": "${AWS::Region}",
+                            "title": "Top Negative Tweets - ${SearchText}"
+                        }
                     }
                 }
             ]
         }
+
+Outputs:
+  TweetSentimentFunctionName:
+    Description: TweetSentiment function name.
+    Value: !Ref TweetSentiment
+  TweetSentimentFunctionArn:
+    Description: TweetSentiment function ARN.
+    Value: !GetAtt TweetSentiment.Arn
+  DashboardName:
+    Description: CloudWatch Dashboard name.
+    Value: !Ref Dashboard
