@@ -49,8 +49,10 @@ def _log_sentiment_results(tweets, sentiment_result_list):
         sentiment_result = sentiment_result_lookup.get(i)
         if sentiment_result:
             LOG.info(
-                'Tweet Sentiment Result: tweet_url:"%s" Positive:%.8f Negative:%.8f Neutral:%.8f Mixed:%.8f',
+                'Tweet Sentiment Result: tweet_url:"%s" Sentiment:%s Positive:%.8f Negative:%.8f '
+                'Neutral:%.8f Mixed:%.8f',
                 _tweet_url(tweet),
+                sentiment_result['Sentiment'].capitalize(),
                 sentiment_result['SentimentScore']['Positive'],
                 sentiment_result['SentimentScore']['Negative'],
                 sentiment_result['SentimentScore']['Neutral'],
@@ -63,12 +65,31 @@ def _tweet_url(tweet):
 
 
 def _to_metric_data(sentiment_result):
-    return [_to_sentiment_metric_datum(score_type, result)
-            for score_type in SENTIMENT_SCORE_TYPES
-            for result in sentiment_result['ResultList']]
+    sentiment_metric_data = [_to_sentiment_metric_datum(result) for result in sentiment_result['ResultList']]
+    sentiment_score_metric_data = [_to_sentiment_score_metric_datum(score_type, result)
+                                   for score_type in SENTIMENT_SCORE_TYPES
+                                   for result in sentiment_result['ResultList']]
+    return sentiment_metric_data + sentiment_score_metric_data
 
 
-def _to_sentiment_metric_datum(score_type, result):
+def _to_sentiment_metric_datum(result):
+    return {
+        'MetricName': 'SentimentCount',
+        'Dimensions': [
+            {
+                'Name': 'SearchText',
+                'Value': config.SEARCH_TEXT
+            },
+            {
+                'Name': 'SentimentType',
+                'Value': result['Sentiment'].capitalize()
+            }
+        ],
+        'Value': 1.0
+    }
+
+
+def _to_sentiment_score_metric_datum(score_type, result):
     return {
         'MetricName': 'SentimentScore',
         'Dimensions': [

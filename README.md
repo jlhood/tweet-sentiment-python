@@ -45,7 +45,6 @@ To learn more about querying logs using CloudWatch Insights, see [the documentat
 1. `PollingFrequencyInMinutes` (optional) - Frequency (in minutes) to poll for new tweets. Default: 5
 1. `DashboardName` (optional) - CloudWatch dashboard name. If not specified, defaults to let CloudFormation name the Dashboard.
 1. `DashboardPeriodInSeconds` (optional) - Period (in seconds) for graphs on CloudWatch dashboard. Valid values are 60 (1 minute), 300 (5 minute), or 3600 (1 hour). Default: 300 (5 minutes)
-1. `DashboardMinConfidenceThreshold` (optional) - Minimum confidence threshold used to determine positive/negative tweets in the CloudWatch Dashboard. Must be a number between 0 and 1. Default: 0.75
 1. `LogLevel` (optional) - Log level for Lambda function logging, e.g., ERROR, INFO, DEBUG, etc. Default: INFO
 
 ## App Outputs

@@ -12,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment, metrics]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 2.0.0
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.0.0
+    SemanticVersion: 2.1.0
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.1.0
 
 Parameters:
   SearchText:
@@ -41,12 +41,6 @@ Parameters:
       - 300
       - 3600
     Default: 300
-  DashboardMinConfidenceThreshold:
-    Type: Number
-    Description: Minimum confidence threshold used to determine positive/negative tweets in the CloudWatch Dashboard.
-    MinValue: 0
-    MaxValue: 1
-    Default: 0.75
   LogLevel:
     Type: String
     Description: Log level for Lambda function logging, e.g., ERROR, INFO, DEBUG, etc
@@ -102,8 +96,35 @@ Resources:
             "widgets": [
                 {
                     "type": "metric",
+                    "x": 0,
+                    "y": 0,
+                    "width": 24,
+                    "height": 6,
+                    "properties": {
+                        "metrics": [
+                            [ "TweetSentiment", "SentimentCount", "SearchText", "${SearchText}", "SentimentType", "Neutral" ],
+                            [ "...", "Negative" ],
+                            [ "...", "Positive" ],
+                            [ "...", "Mixed" ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": true,
+                        "region": "${AWS::Region}",
+                        "stat": "Sum",
+                        "period": ${DashboardPeriodInSeconds},
+                        "title": "Tweet Volume - ${SearchText}",
+                        "yAxis": {
+                            "left": {
+                                "label": "Count",
+                                "showUnits": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "metric",
                     "x": 12,
-                    "y": 6,
+                    "y": 12,
                     "width": 12,
                     "height": 6,
                     "properties": {
@@ -117,7 +138,7 @@ Resources:
                         "region": "${AWS::Region}",
                         "stat": "Average",
                         "period": ${DashboardPeriodInSeconds},
-                        "title": "Mixed - ${SearchText}",
+                        "title": "Mixed Score - ${SearchText}",
                         "yAxis": {
                             "left": {
                                 "label": "%",
@@ -131,7 +152,7 @@ Resources:
                 {
                     "type": "metric",
                     "x": 0,
-                    "y": 0,
+                    "y": 6,
                     "width": 12,
                     "height": 6,
                     "properties": {
@@ -145,7 +166,7 @@ Resources:
                         "region": "${AWS::Region}",
                         "stat": "Average",
                         "period": ${DashboardPeriodInSeconds},
-                        "title": "Positive - ${SearchText}",
+                        "title": "Positive Score - ${SearchText}",
                         "yAxis": {
                             "left": {
                                 "label": "%",
@@ -153,21 +174,13 @@ Resources:
                                 "min": 0,
                                 "max": 1
                             }
-                        },
-                        "annotations": {
-                            "horizontal": [
-                                {
-                                    "label": "Confidence",
-                                    "value": ${DashboardMinConfidenceThreshold}
-                                }
-                            ]
                         }
                     }
                 },
                 {
                     "type": "metric",
                     "x": 12,
-                    "y": 0,
+                    "y": 6,
                     "width": 12,
                     "height": 6,
                     "properties": {
@@ -181,7 +194,7 @@ Resources:
                         "region": "${AWS::Region}",
                         "stat": "Average",
                         "period": ${DashboardPeriodInSeconds},
-                        "title": "Negative - ${SearchText}",
+                        "title": "Negative Score - ${SearchText}",
                         "yAxis": {
                             "left": {
                                 "label": "%",
@@ -189,21 +202,13 @@ Resources:
                                 "min": 0,
                                 "max": 1
                             }
-                        },
-                        "annotations": {
-                            "horizontal": [
-                                {
-                                    "label": "Confidence",
-                                    "value": ${DashboardMinConfidenceThreshold}
-                                }
-                            ]
                         }
                     }
                 },
                 {
                     "type": "metric",
                     "x": 0,
-                    "y": 6,
+                    "y": 12,
                     "width": 12,
                     "height": 6,
                     "properties": {
@@ -217,7 +222,7 @@ Resources:
                         "region": "${AWS::Region}",
                         "stat": "Average",
                         "period": ${DashboardPeriodInSeconds},
-                        "title": "Neutral - ${SearchText}",
+                        "title": "Neutral Score - ${SearchText}",
                         "yAxis": {
                             "left": {
                                 "label": "%",
@@ -231,11 +236,11 @@ Resources:
                 {
                     "type": "log",
                     "x": 0,
-                    "y": 12,
+                    "y": 18,
                     "width": 24,
                     "height": 6,
                     "properties": {
-                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[*]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Positive:* Negative:* Neutral:* Mixed:*' as logLevel, datetime, requestId, tweetUrl, positive, negative, neutral, mixed\n| filter positive >= ${DashboardMinConfidenceThreshold}\n| sort positive desc\n| limit 10",
+                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, sentiment, positive, negative, neutral, mixed\n| filter sentiment = 'Positive'\n| sort positive desc\n| limit 10",
                         "region": "${AWS::Region}",
                         "title": "Top Positive Tweets - ${SearchText}"
                     }
@@ -243,11 +248,11 @@ Resources:
                 {
                     "type": "log",
                     "x": 0,
-                    "y": 18,
+                    "y": 24,
                     "width": 24,
                     "height": 6,
                     "properties": {
-                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[*]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Positive:* Negative:* Neutral:* Mixed:*' as logLevel, datetime, requestId, tweetUrl, positive, negative, neutral, mixed\n| filter negative >= ${DashboardMinConfidenceThreshold}\n| sort negative desc\n| limit 10",
+                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, sentiment, positive, negative, neutral, mixed\n| filter sentiment = 'Negative'\n| sort negative desc\n| limit 10",
                         "region": "${AWS::Region}",
                         "title": "Top Negative Tweets - ${SearchText}"
                     }
