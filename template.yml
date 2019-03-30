@@ -12,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment, metrics]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 2.1.0
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.1.0
+    SemanticVersion: 2.2.0
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.2.0
 
 Parameters:
   SearchText:
@@ -238,6 +238,18 @@ Resources:
                     "x": 0,
                     "y": 18,
                     "width": 24,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, sentiment, positive, negative, neutral, mixed\n| stats count(sentiment) as sentimentCount by sentiment\n| sort sentimentCount desc",
+                        "region": "${AWS::Region}",
+                        "title": "Sentiment Counts - ${SearchText}"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 22,
+                    "width": 24,
                     "height": 6,
                     "properties": {
                         "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, sentiment, positive, negative, neutral, mixed\n| filter sentiment = 'Positive'\n| sort positive desc\n| limit 10",
@@ -248,7 +260,7 @@ Resources:
                 {
                     "type": "log",
                     "x": 0,
-                    "y": 24,
+                    "y": 28,
                     "width": 24,
                     "height": 6,
                     "properties": {
