@@ -3,6 +3,8 @@
 # must be the first import in files with lambda function handlers
 import lambdainit  # noqa: F401
 
+from operator import itemgetter
+
 import boto3
 
 import config
@@ -25,15 +27,30 @@ def handler(tweets, context):
     LOG.debug('Received tweets: %s', tweets)
 
     tweet_text = [tweet['full_text'] for tweet in tweets]
-    LOG.debug('Detecting sentiment for tweet text batch: %s', tweet_text)
-    sentiment_result = COMPREHEND.batch_detect_sentiment(
-        TextList=tweet_text,
-        LanguageCode='en'
+    LOG.debug('Detecting dominant language for tweet text batch: %s', tweet_text)
+    language_result = COMPREHEND.batch_detect_dominant_language(
+        TextList=tweet_text
     )
 
-    _log_sentiment_results(tweets, sentiment_result['ResultList'])
+    tweets_by_language = _get_tweets_by_language(tweets, language_result['ResultList'])
+    LOG.debug('Tweets by language: %s', tweets_by_language)
 
-    metric_data = _to_metric_data(sentiment_result)
+    sentiment_result_logs = []
+    metric_data = []
+    for language_code, language_tweets in tweets_by_language.items():
+        language_tweet_text = [tweet['full_text'] for tweet in language_tweets]
+        LOG.debug('Detecting sentiment: language_code: %s, tweet text: %s', language_code, language_tweet_text)
+        sentiment_result = COMPREHEND.batch_detect_sentiment(
+            TextList=language_tweet_text,
+            LanguageCode=language_code
+        )
+
+        sentiment_result_logs += _get_sentiment_result_logs(
+            language_tweets, language_code, sentiment_result['ResultList'])
+        metric_data += _to_metric_data(sentiment_result)
+
+    for log in sentiment_result_logs:
+        LOG.info(log)
     LOG.debug('Putting metric data: %s', metric_data)
     CLOUDWATCH.put_metric_data(
         Namespace='TweetSentiment',
@@ -41,23 +58,42 @@ def handler(tweets, context):
     )
 
 
-def _log_sentiment_results(tweets, sentiment_result_list):
+def _get_tweets_by_language(tweets, language_result_list):
+    result_lookup = {result['Index']: result for result in language_result_list}
+    tweets_by_language = {}
+    for i, tweet in enumerate(tweets):
+        result = result_lookup.get(i)
+        # default to English if we can't determine language
+        language_code = 'en'
+        if result and result['Languages']:
+            language_code = sorted(result['Languages'], key=itemgetter('Score'), reverse=True)[0]['LanguageCode']
+
+        tweets_by_language.setdefault(language_code, []).append(tweet)
+
+    return tweets_by_language
+
+
+def _get_sentiment_result_logs(tweets, language_code, sentiment_result_list):
     """Log sentiment results in a structured way so it can be queried using CloudWatch Insights."""
     sentiment_result_lookup = {result['Index']: result for result in sentiment_result_list}
 
+    result_logs = []
     for i, tweet in enumerate(tweets):
         sentiment_result = sentiment_result_lookup.get(i)
         if sentiment_result:
-            LOG.info(
-                'Tweet Sentiment Result: tweet_url:"%s" Sentiment:%s Positive:%.8f Negative:%.8f '
-                'Neutral:%.8f Mixed:%.8f',
-                _tweet_url(tweet),
-                sentiment_result['Sentiment'].capitalize(),
-                sentiment_result['SentimentScore']['Positive'],
-                sentiment_result['SentimentScore']['Negative'],
-                sentiment_result['SentimentScore']['Neutral'],
-                sentiment_result['SentimentScore']['Mixed']
+            result_logs.append(
+                'Tweet Sentiment Result: tweet_url:"{}" LanguageCode:{} Sentiment:{} Positive:{:.8f} Negative:{:.8f} '
+                'Neutral:{:.8f} Mixed:{:.8f}'.format(
+                    _tweet_url(tweet),
+                    language_code,
+                    sentiment_result['Sentiment'].capitalize(),
+                    sentiment_result['SentimentScore']['Positive'],
+                    sentiment_result['SentimentScore']['Negative'],
+                    sentiment_result['SentimentScore']['Neutral'],
+                    sentiment_result['SentimentScore']['Mixed']
+                )
             )
+    return result_logs
 
 
 def _tweet_url(tweet):
