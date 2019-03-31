@@ -12,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment, metrics]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 2.3.0
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.3.0
+    SemanticVersion: 2.3.1
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.3.1
 
 Parameters:
   SearchText:
@@ -240,7 +240,7 @@ Resources:
                     "width": 24,
                     "height": 4,
                     "properties": {
-                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" LanguageCode:* Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, languageCode, sentiment, positive, negative, neutral, mixed\n| stats count(sentiment) as count by sentiment\n| sort count desc",
+                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" LanguageCode:* Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, language, sentiment, positive, negative, neutral, mixed\n| stats count(sentiment) as count by sentiment\n| sort count desc",
                         "region": "${AWS::Region}",
                         "title": "Sentiment Counts - ${SearchText}"
                     }
@@ -252,7 +252,7 @@ Resources:
                     "width": 24,
                     "height": 6,
                     "properties": {
-                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" LanguageCode:* Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, languageCode, sentiment, positive, negative, neutral, mixed\n| filter sentiment = 'Positive'\n| sort positive desc\n| limit 10",
+                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" LanguageCode:* Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, language, sentiment, positive, negative, neutral, mixed\n| filter sentiment = 'Positive'\n| sort positive desc\n| limit 10",
                         "region": "${AWS::Region}",
                         "title": "Top Positive Tweets - ${SearchText}"
                     }
@@ -264,7 +264,7 @@ Resources:
                     "width": 24,
                     "height": 6,
                     "properties": {
-                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" LanguageCode:* Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, languageCode, sentiment, positive, negative, neutral, mixed\n| filter sentiment = 'Negative'\n| sort negative desc\n| limit 10",
+                        "query": "SOURCE '/aws/lambda/${TweetSentiment}' | filter @message like /Tweet Sentiment Result/\n| parse @message '[INFO]\t*\t*\tTweet Sentiment Result: tweet_url:\"*\" LanguageCode:* Sentiment:* Positive:* Negative:* Neutral:* Mixed:*' as datetime, requestId, tweetUrl, language, sentiment, positive, negative, neutral, mixed\n| filter sentiment = 'Negative'\n| sort negative desc\n| limit 10",
                         "region": "${AWS::Region}",
                         "title": "Top Negative Tweets - ${SearchText}"
                     }
