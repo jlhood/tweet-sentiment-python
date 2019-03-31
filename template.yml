@@ -12,8 +12,8 @@ Metadata:
     ReadmeUrl: README.md
     Labels: [twitter, tweet, sentiment, metrics]
     HomePageUrl: https://github.com/jlhood/tweet-sentiment-python
-    SemanticVersion: 2.3.1
-    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.3.1
+    SemanticVersion: 2.3.2
+    SourceCodeUrl: https://github.com/jlhood/tweet-sentiment-python/tree/2.3.2
 
 Parameters:
   SearchText:

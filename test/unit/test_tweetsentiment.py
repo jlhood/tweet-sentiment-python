@@ -184,3 +184,35 @@ def test_handler(mocker, mock_comprehend, mock_cloudwatch):
         Namespace='TweetSentiment',
         MetricData=expected
     )
+
+
+def test_handler_unsupported_language(mocker, mock_comprehend, mock_cloudwatch):
+    tweets = [
+        {
+            'id_str': '1',
+            'full_text': 'unsupported language',
+            'user': {
+                'screen_name': 'foo'
+            }
+        }
+    ]
+
+    # testing cases where no result is returned or no languages are returned as well as case where results are returned
+    mock_comprehend.batch_detect_dominant_language.return_value = {
+        'ResultList': [
+            {
+                'Index': 0,
+                'Languages': [
+                    {
+                        'LanguageCode': 'unsupported',
+                        'Score': 1.0
+                    }
+                ]
+            }
+        ]
+    }
+
+    tweetsentiment.handler(tweets, None)
+
+    mock_comprehend.batch_detect_sentiment.assert_not_called()
+    mock_cloudwatch.put_metric_data.assert_not_called()

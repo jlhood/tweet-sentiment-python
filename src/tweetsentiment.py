@@ -14,6 +14,8 @@ LOG = lambdalogging.getLogger(__name__)
 COMPREHEND = boto3.client('comprehend')
 CLOUDWATCH = boto3.client('cloudwatch')
 
+# BatchDetectSentiment API only supports some languages
+SUPPORTED_LANGUAGE_CODES = set(['de', 'pt', 'en', 'it', 'fr', 'es'])
 SENTIMENT_SCORE_TYPES = [
     'Positive',
     'Negative',
@@ -38,6 +40,9 @@ def handler(tweets, context):
     sentiment_result_logs = []
     metric_data = []
     for language_code, language_tweets in tweets_by_language.items():
+        if language_code not in SUPPORTED_LANGUAGE_CODES:
+            continue
+
         language_tweet_text = [tweet['full_text'] for tweet in language_tweets]
         LOG.debug('Detecting sentiment: language_code: %s, tweet text: %s', language_code, language_tweet_text)
         sentiment_result = COMPREHEND.batch_detect_sentiment(
@@ -51,11 +56,13 @@ def handler(tweets, context):
 
     for log in sentiment_result_logs:
         LOG.info(log)
-    LOG.debug('Putting metric data: %s', metric_data)
-    CLOUDWATCH.put_metric_data(
-        Namespace='TweetSentiment',
-        MetricData=metric_data
-    )
+
+    if metric_data:
+        LOG.debug('Putting metric data: %s', metric_data)
+        CLOUDWATCH.put_metric_data(
+            Namespace='TweetSentiment',
+            MetricData=metric_data
+        )
 
 
 def _get_tweets_by_language(tweets, language_result_list):
