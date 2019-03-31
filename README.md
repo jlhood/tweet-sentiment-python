@@ -2,7 +2,7 @@
 
 ![Build Status](https://codebuild.us-east-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiUm92emZwZEswbVFianZFa21YY3JFblU1NzNhL0lKYVJXVzM2MkdhNlRia3ROSWx2VERSYXFyWVV3NWk1ckJrc3I3UFJIdWNRRHJrM1JyVjJHdTZkUmlnPSIsIml2UGFyYW1ldGVyU3BlYyI6Ik5BNDBydlY5UmFGdWdjMHYiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
 
-This serverless app processes tweets for the given Twitter search text, calls [Amazon Comprehend](https://aws.amazon.com/comprehend/) to do sentiment analysis on the tweet text, and publishes the sentiment scores as custom metrics to [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) Metrics.
+This serverless app processes tweets for a given Twitter search, calls [Amazon Comprehend](https://aws.amazon.com/comprehend/) to do sentiment analysis on the tweet text, and publishes the sentiment scores as custom metrics to [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) Metrics.
 
 ## App Architecture
 
@@ -23,7 +23,7 @@ This serverless app processes tweets for the given Twitter search text, calls [A
 
 ## Using the CloudWatch Dashboard
 
-The app automatically creates a CloudWatch Dashboard for easy viewing of aggregate sentiment scores as well as top positive/negative tweets. Here are example screenshots where the app was configured to search for '#serverless':
+The app automatically creates a CloudWatch Dashboard for easy viewing of aggregate sentiment scores as well as top positive/negative tweets. Here are example screenshots where the app was configured to search for 'serverless':
 
 ![Dashboard Metrics Screenshot](https://github.com/jlhood/tweet-sentiment-python/raw/master/images/dashboard-screenshot-1.png)
 
